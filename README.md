@@ -301,3 +301,149 @@ A idade dos participantes do grupo Parkinson permanece nula porque a idade indiv
               └─────────────────────┘
 
 
+# Arquitetura dos Dados
+
+O projeto utiliza uma organização em camadas para manter a rastreabilidade das transformações realizadas sobre o dataset.
+
+## Camada Bronze
+
+A camada Bronze contém os dados provenientes dos arquivos originais do dataset, preservando os valores da fonte e registrando o arquivo de origem de cada observação.
+
+Arquivo principal:
+
+`data/bronze/gaitdb_bronze.parquet`
+
+## Camada Silver
+
+Na camada Silver são realizadas as transformações necessárias para utilização analítica dos dados, incluindo:
+
+- identificação do participante;
+- classificação do grupo;
+- definição da idade quando disponível;
+- conversão dos valores para tipos numéricos adequados;
+- padronização da estrutura dos dados.
+
+Arquivo principal:
+
+`data/silver/gaitdb_silver.parquet`
+
+## Camada Gold
+
+A camada Gold contém o modelo analítico utilizado no projeto.
+
+Foram criadas uma tabela fato e duas dimensões:
+
+- `fato_passada.parquet`
+- `dim_participante.parquet`
+- `dim_protocolo.parquet`
+
+A utilização das camadas permite separar os dados de origem dos dados tratados e das estruturas destinadas à análise.
+
+
+
+# Modelo Analítico
+
+Foi utilizado um modelo dimensional em esquema estrela.
+
+## Tabela fato
+
+### fato_passada
+
+A tabela `fato_passada` contém as observações dos intervalos de passada.
+
+**Granularidade:**
+
+Cada linha da tabela `fato_passada` representa um intervalo de passada registrado para um participante em determinado instante da caminhada.
+
+Principais atributos:
+
+- `passada_key`
+- `participante_key`
+- `protocolo_key`
+- `tempo_(s)`
+- `intervalo_passada_(s)`
+
+## Dimensão participante
+
+### dim_participante
+
+Contém as informações referentes aos participantes:
+
+- `participante_key`
+- `participante_id`
+- `grupo`
+- `idade`
+
+## Dimensão protocolo
+
+### dim_protocolo
+
+Representa as características do protocolo de coleta:
+
+- `protocolo_key`
+- `protocolo`
+- `duracao_prevista_min`
+- `tipo_percurso`
+
+As chaves das dimensões são utilizadas para relacionar as informações de contexto à tabela fato.
+
+
+
+# Testes de Qualidade
+
+Foram implementados testes automatizados utilizando DuckDB para verificar a qualidade e a integridade da camada Gold.
+
+Os testes estão disponíveis em:
+
+`src/testes_qualidade.ipynb`
+
+Foram avaliadas as seguintes regras:
+
+| Teste | Tipo |
+|---|---|
+| Unicidade de `participante_key` | Unicidade |
+| Ausência de valores nulos em `intervalo_passada_(s)` | Nulo |
+| Valores válidos da variável `grupo` | Domínio |
+| Intervalos de passada maiores que zero | Domínio |
+| Existência do participante na dimensão | Chave estrangeira |
+| Existência do protocolo na dimensão | Chave estrangeira |
+| Coerência da idade com a documentação | Completude |
+
+Na execução atual, todos os testes apresentaram zero violações.
+
+O resultado consolidado dos testes é armazenado em:
+
+`resultados/testes_qualidade.csv`
+
+O relatório contendo os problemas avaliados, correções e decisões adotadas está disponível em:
+
+`docs/relatorio_qualidade.md`
+
+
+# Preparação para Inteligência Artificial
+
+Embora a base processada possua 9.144 registros de passadas, esses registros pertencem a apenas 15 participantes.
+
+Por esse motivo, a unidade de análise considerada para uma futura aplicação de Machine Learning é o **participante**, e não cada intervalo de passada individual.
+
+As estatísticas dos intervalos de passada foram previamente agregadas por participante durante a análise exploratória.
+
+## Separação entre treino e teste
+
+A separação entre treino e teste foi realizada no nível do participante.
+
+Todas as observações provenientes de uma mesma pessoa devem permanecer na mesma partição, evitando que registros do mesmo participante estejam simultaneamente nos conjuntos de treino e teste.
+
+Como demonstração metodológica:
+
+- 12 participantes foram destinados ao treino;
+- 3 participantes foram destinados ao teste;
+- foi selecionado 1 participante de cada grupo para o conjunto de teste.
+
+Foi realizada uma verificação explícita para confirmar que nenhum participante aparece simultaneamente nas duas partições.
+
+A divisão utilizada está registrada em:
+
+`resultados/particao_participantes.csv`
+
+Devido ao pequeno número de participantes, essa separação possui finalidade metodológica e não deve ser interpretada como suficiente para avaliar o desempenho clínico de um modelo de Machine Learning.
