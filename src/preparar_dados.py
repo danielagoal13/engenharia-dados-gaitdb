@@ -14,7 +14,7 @@ PASTA_PROCESSADA = BASE / "data" / "processed"
 ARQUIVO_SAIDA = PASTA_PROCESSADA / "gaitdb.csv"
 
 # ============================================================
-# IDENTIFICAR PARTICIPANTE
+# IDENTIFICAR PARTICIPANTE (PRATA)
 # ============================================================
 
 def obter_dados_participante(nome_arquivo):                   #Descobre o participante, grupo e idade usando o nome do arquivo.
