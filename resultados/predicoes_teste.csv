@@ -1,0 +1,4 @@
+participante_id,grupo_real,rotulo_real,rotulo_previsto,escore_decisao_svm
+o4,idoso,controle,controle,-1.1064969392970332
+pd3,parkinson,parkinson,parkinson,4.54620165221539
+y5,jovem,controle,controle,-1.1886847872445818

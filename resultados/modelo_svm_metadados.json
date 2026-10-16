@@ -1,0 +1,10 @@
+{
+  "nome_modelo": "Support Vector Classifier (SVC) linear",
+  "versao_scikit_learn": "1.9.1",
+  "caracteristicas": [
+    "media_intervalo_s",
+    "instab_caminhada",
+    "consistencia_ritmo_passos"
+  ],
+  "semente_divisao": 42
+}
