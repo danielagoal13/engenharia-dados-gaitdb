@@ -1,0 +1,4 @@
+participante_1,grupo_1,participante_2,grupo_2,similaridade_cosseno,alerta
+o1,idoso,y3,jovem,0.9598,CONFLITO DE CLASSE!
+y1,jovem,y4,jovem,0.9708,ALTA SIMILARIDADE - MESMO GRUPO
+y1,jovem,y5,jovem,0.9744,ALTA SIMILARIDADE - MESMO GRUPO
